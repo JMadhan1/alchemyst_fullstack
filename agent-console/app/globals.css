@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+/* ── Design tokens ───────────────────────────────────────────────────────── */
+:root {
+  --bg-base:    #060609;
+  --bg-panel:   #0d0d14;
+  --bg-surface: #13131f;
+  --bg-raised:  #1a1a2e;
+  --border:     #1e1e35;
+  --border-dim: #161625;
+  --text-1:     #e8eaf6;
+  --text-2:     #8892b0;
+  --text-3:     #4a5568;
+  --blue:       #4f8ef7;
+  --blue-dim:   #1a2f5c;
+  --amber:      #f59e0b;
+  --amber-dim:  #2a1d00;
+  --green:      #10d9a0;
+  --green-dim:  #002a1e;
+  --red:        #f87171;
+  --red-dim:    #2a0a0a;
+  --purple:     #a78bfa;
+  --purple-dim: #1e1040;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  background: var(--bg-base);
+  color: var(--text-1);
+  font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', ui-monospace,
+    'SF Mono', Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Subtle grid background ──────────────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border-dim) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-dim) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+/* all content above the grid */
+#__next, [data-nextjs-scroll-focus-boundary] { position: relative; z-index: 1; }
+
+/* ── Scrollbars ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #2e2e55; }
+
+/* ── Glow utilities ──────────────────────────────────────────────────────── */
+.glow-blue  { box-shadow: 0 0 12px rgba(79,142,247,0.18); }
+.glow-green { box-shadow: 0 0 12px rgba(16,217,160,0.15); }
+.glow-amber { box-shadow: 0 0 12px rgba(245,158,11,0.18); }
+
+/* ── Panel border gradient ───────────────────────────────────────────────── */
+.panel-border-r { border-right: 1px solid var(--border); }
+.panel-border-l { border-left: 1px solid var(--border); }
+.panel-border-b { border-bottom: 1px solid var(--border); }
+.panel-border-t { border-top: 1px solid var(--border); }
+
+/* ── Animated status dot ─────────────────────────────────────────────────── */
+@keyframes status-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 currentColor; }
+  50% { opacity: 0.8; box-shadow: 0 0 6px 2px currentColor; }
+}
+.status-dot-live { animation: status-pulse 2s ease-in-out infinite; }
+
+/* ── Token streaming cursor ──────────────────────────────────────────────── */
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+.cursor-blink { animation: blink 1s step-end infinite; }
+
+/* ── Chaos badge pulse ───────────────────────────────────────────────────── */
+@keyframes chaos-pulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.03); }
+}
+.chaos-badge { animation: chaos-pulse 1.2s ease-in-out infinite; }
+
+/* ── Reconnect banner shimmer ────────────────────────────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(245,158,11,0.06) 50%,
+    transparent 100%
+  );
+  background-size: 400px 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* ── Tool card animations ────────────────────────────────────────────────── */
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.card-in { animation: card-in 0.18s ease-out; }
+
+/* ── Input focus ring ────────────────────────────────────────────────────── */
+.input-ring:focus-within {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--blue), 0 0 8px rgba(79,142,247,0.12);
+}
+
+/* ── Typography ──────────────────────────────────────────────────────────── */
+.mono { font-family: inherit; }
+.label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+/* ── Range input ─────────────────────────────────────────────────────────── */
+input[type='range'] { accent-color: var(--purple); cursor: pointer; }
+
+/* ── Vertical text for collapsed panels ──────────────────────────────────── */
+.vertical-text {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+}

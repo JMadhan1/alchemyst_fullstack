@@ -1,0 +1,25 @@
+{
+  "name": "agent-server",
+  "version": "1.0.0",
+  "description": "Alchemyst AI agent backend — Full Stack AI assignment",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "dev:chaos": "tsx src/index.ts --mode chaos",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "start:chaos": "node dist/index.js --mode chaos"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/ws": "^8.5.12",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
