@@ -114,13 +114,31 @@ stateDiagram-v2
 
 ---
 
-## 🎬 Required media — ⚠️ action before submitting
+## 🎬 Demo & media
 
-The brief marks these **mandatory**; they can only be captured by a human running the app, so they're not in the repo yet.
+### ▶️ Chaos-mode walkthrough — [**Watch the demo on Loom**](https://www.loom.com/share/a87ebb5deb7043f3b09c41b23b627286)
 
-**Three normal-mode screenshots** (drop in `docs/`, link here): (a) streamed response **with a tool call**, (b) the **trace timeline** mid-stream, (c) the **context inspector** showing a diff.
+> A 3–5 minute screen recording of the Agent Console running against the backend in `--mode chaos`, walking through every survival scenario: connection drop mid-stream, out-of-order messages, rapid tool calls, an oversized context snapshot, and a corrupt heartbeat — with the `/log` endpoint on screen as proof of protocol compliance.
 
-**A 3–5 min chaos recording** (YouTube unlisted / Loom / `.mp4`). Run `npm run dev:chaos`, keep `GET http://localhost:4747/log` on screen, and narrate each scenario:
+### 📸 Screenshots (normal mode)
+
+**(a) Streamed response with a tool call** — incremental tokens, the frozen text, and a resolved `lookup_metric` card; the live context inspector (left) and trace timeline (right) update in lockstep.
+
+![Streamed response with a tool call](agent-server/images/01-streaming-tool-call.png)
+
+**(b) Rapid / stacked tool calls + trace timeline** — `analyze and compare` fires two tool calls (`fetch_dataset`, `compute_correlation`); both cards stack and resolve, while the right-hand timeline streams every PING/PONG/TOOL event.
+
+![Stacked tool calls and trace timeline](agent-server/images/02-rapid-tool-calls.png)
+
+**(c) Context inspector + state-machine overview** — the three-panel layout with the context tree (added / removed / changed legend, history scrubber) and the live WebSocket state-machine map shown before connecting.
+
+![Context inspector and state machine](agent-server/images/03-state-machine.png)
+
+**(d) Protocol compliance proof — the `/log` endpoint** — every recorded client event (`USER_MESSAGE`, `TOOL_ACK`, `PONG` with `latency_ms`) carries `"verdict": "ok"`. This is exactly what the evaluator audits.
+
+![Server /log verdicts all ok](agent-server/images/04-log-compliance.png)
+
+**Reproduce the recording yourself:** run `npm run dev:chaos`, keep `GET http://localhost:4747/log` on screen, and walk each scenario:
 
 | Scenario | Trigger / what to show |
 |----------|------------------------|
