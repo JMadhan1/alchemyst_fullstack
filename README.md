@@ -1,48 +1,120 @@
 <div align="center">
 
-# 🛰️ Agent Console
+<img src="agent-server/images/03-state-machine.png" alt="Agent Console" width="100%" />
 
-### A real-time AI agent monitor that treats streaming as a distributed-systems problem — with a render loop attached.
+<br/>
 
-**Next.js 16 · App Router · TypeScript (strict) · Zustand + Immer · Zero AI-SDK helpers**
+# 🛰️ &nbsp; A G E N T &nbsp; C O N S O L E
 
-Streams tokens. Freezes mid-sentence for tool calls. Diffs half-megabyte context payloads.
-Survives dropped sockets, shuffled `seq`, duplicate frames, latency spikes, and corrupt heartbeats — **without losing a single token.**
+### Real-time AI agent monitoring that treats streaming as a *distributed-systems* problem — with a render loop attached.
 
-`ws://localhost:4747/ws` → token stream → tool interrupts → context diffs → trace timeline
+<br/>
+
+![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript_strict-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Zustand](https://img.shields.io/badge/Zustand_+_Immer-433E38?style=for-the-badge)
+![WebSocket](https://img.shields.io/badge/WebSocket-010101?style=for-the-badge&logo=socketdotio&logoColor=white)
+
+![Protocol](https://img.shields.io/badge/protocol_compliance-100%25-22c55e?style=flat-square)
+![Chaos](https://img.shields.io/badge/chaos_mode-survives-f59e0b?style=flat-square)
+![AI SDK](https://img.shields.io/badge/AI--SDK_helpers-zero-ef4444?style=flat-square)
+![Tests](https://img.shields.io/badge/unit_tests-seqBuffer_·_jsonDiff_·_stateMachine_·_wsClient-3178C6?style=flat-square)
+
+<br/>
+
+**Streams tokens. Freezes mid-sentence for tool calls. Diffs half-megabyte payloads.**
+**Survives dropped sockets · shuffled `seq` · duplicate frames · latency spikes · corrupt heartbeats — without losing a single token.**
+
+<br/>
+
+### [▶︎ &nbsp;WATCH THE 5-MIN CHAOS DEMO](https://www.loom.com/share/a87ebb5deb7043f3b09c41b23b627286)
+
+<a href="https://www.loom.com/share/a87ebb5deb7043f3b09c41b23b627286">
+  <img src="agent-server/images/02-rapid-tool-calls.png" alt="Watch the chaos-mode demo on Loom" width="80%" />
+</a>
+
+<sub>👆 Click to watch the Agent Console survive `--mode chaos` live, with the `/log` endpoint on screen as proof.</sub>
 
 </div>
 
 ---
 
-> **TL;DR for reviewers**
-> The hard part of this brief isn't the UI — it's the wire. A pure-TypeScript `WSStateMachine` + `SeqBuffer` core handles ordering, dedup, and reconnection **outside React**, so the render layer never sees an out-of-order frame. Control responses (`PONG`, `TOOL_ACK`) are answered *before* the reorder buffer, so chaos can never push them past their deadlines. Run `npm run verify` and read the `/log` verdict tally instead of taking my word for it.
+> ### 💡 TL;DR for reviewers
+> The hard part of this brief isn't the UI — it's **the wire**. A pure-TypeScript `WSStateMachine` + `SeqBuffer` core handles ordering, dedup, and reconnection **outside React**, so the render layer never sees an out-of-order frame. Control responses (`PONG`, `TOOL_ACK`) are answered *before* the reorder buffer, so chaos can never push them past deadline. Don't take my word for it — run `npm run verify` and read the `/log` verdict tally.
 
 ---
 
 ## ⚡ 60-second start
 
 ```bash
-# 1 ── Backend (in ../agent-server, Node ≥ 20)
+# 1 ── Backend  (cd agent-server, Node ≥ 20)
 npm install
 npm run dev          # normal mode  → ws://localhost:4747/ws
 npm run dev:chaos    # chaos mode   → drops · reorder · dupes · latency · corrupt PING
 
-# 2 ── Frontend (in ./agent-console)
+# 2 ── Frontend (cd agent-console)
 npm install
 npm run dev          # → http://localhost:3000  → click "Connect"
 
-# 3 ── Prove it works (server must be running)
+# 3 ── Prove it  (server must be running)
 npm run verify       # drives 6 multi-turn scenarios, prints the /log verdict tally
 ```
 
-Production build: `npm install && npm run build && npm start` — no manual steps, no env vars.
+<sub>Production: `npm install && npm run build && npm start` — no manual steps, no env vars.</sub>
+
+---
+
+## 🖼️ See it in action
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+**① Streaming + tool-call interrupt**
+
+Tokens render incrementally; the text **freezes with zero reflow** while a `lookup_metric` card resolves below it. Context inspector (left) and trace timeline (right) update in lockstep.
+
+<img src="agent-server/images/01-streaming-tool-call.png" alt="Streaming response with a tool call" />
+
+</td>
+<td width="50%" valign="top">
+
+**② Rapid / stacked tool calls**
+
+`analyze and compare` fires two tools (`fetch_dataset`, `compute_correlation`). Both cards **stack and resolve** — no overwrite, no duplicate text on resume.
+
+<img src="agent-server/images/02-rapid-tool-calls.png" alt="Rapid stacked tool calls and trace timeline" />
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
+**③ State machine + 3-panel layout**
+
+Context Inspector · Chat · Trace Timeline, with the live WebSocket state-machine map shown before connecting.
+
+<img src="agent-server/images/03-state-machine.png" alt="State machine and three-panel layout" />
+
+</td>
+<td width="50%" valign="top">
+
+**④ Protocol compliance — the `/log` proof**
+
+Every recorded client event (`TOOL_ACK`, `PONG` with `latency_ms`, `RESUME`) carries **`"verdict": "ok"`** — exactly what the evaluator audits.
+
+<img src="agent-server/images/04-log-compliance.png" alt="Server /log verdicts all ok" />
+
+</td>
+</tr>
+</table>
 
 ---
 
 ## 🧠 Architecture in three sentences
 
-The app is built around a **pure TypeScript `WSStateMachine` + `SeqBuffer` core** that resolves all protocol complexity — ordering, deduplication, reconnection, replay — completely independent of React. A `WSClient` class owns the socket lifecycle and feeds a **Zustand + Immer** store through a single `useWebSocket` hook, keeping every component declarative and free of socket logic. The three-panel UI (**Context Inspector · Chat · Trace Timeline**) renders with virtual windowing and `React.memo` so it sustains 30+ events/sec without ever re-rendering the full list.
+The app is built around a **pure TypeScript `WSStateMachine` + `SeqBuffer` core** that resolves all protocol complexity — ordering, deduplication, reconnection, replay — completely independent of React. A `WSClient` class owns the socket lifecycle and feeds a **Zustand + Immer** store through a single `useWebSocket` hook, keeping every component declarative and free of socket logic. The three-panel UI renders with virtual windowing and `React.memo` so it sustains 30+ events/sec without ever re-rendering the full list.
 
 ---
 
@@ -98,7 +170,7 @@ stateDiagram-v2
     CLOSED --> CONNECTING : USER_CONNECT
 ```
 
-> On reconnect the client transitions `RECONNECTING → RESUMING` and sends `RESUME { last_seq }` as the **first frame** on the new socket — *before* draining any buffered events. That ordering is deliberate: `last_seq` is the highest seq the **DOM has consumed**, not the highest the socket received.
+> On reconnect the client transitions `RECONNECTING → RESUMING` and sends `RESUME { last_seq }` as the **first frame** on the new socket — *before* draining any buffered events. `last_seq` is the highest seq the **DOM has consumed**, not the highest the socket received.
 
 ---
 
@@ -106,39 +178,17 @@ stateDiagram-v2
 
 | # | Task | What lands in the UI |
 |---|------|----------------------|
-| **1** | **Streaming chat + tool interrupts** | Tokens render incrementally; on `TOOL_CALL` the in-progress text **freezes with zero reflow**, a card appears below, `TOOL_ACK` fires < 2 s, and on `TOOL_RESULT` the stream resumes with no gap or duplicate. Sequential tool calls **stack**, never overwrite. |
-| **2** | **Agent trace timeline** | Every event becomes a row; consecutive tokens collapse into one expandable *"Streamed 47 tokens (1.2s)"* row; `TOOL_CALL`/`TOOL_RESULT` are visually linked by `call_id`; **bidirectional click** between chat and timeline; filter-by-type + content search; virtualized so 30+ ev/sec stays smooth. |
-| **3** | **Context inspector** | Syntax-highlighted tree view; subsequent snapshots (same `context_id`) render an **added / removed / changed diff**; a **history scrubber** steps through snapshots; lazy expansion keeps 500 KB+ payloads interactive. |
-| **4** | **Reconnection + state recovery** | Non-blocking indicator < 500 ms; exponential backoff **500 ms → 1 → 2 → 4 → cap 10 s**; `RESUME` first; replayed events reordered, deduped, stitched in with no jump; mid-tool-call drops keep the card in a **waiting** state until the replayed `TOOL_RESULT` lands. |
-| **5** | **Chaos survival** | Drops, shuffled `seq`, duplicates, rapid double tool calls, 500 KB context, and empty-challenge `PING` all handled without a crash or inconsistent DOM. *(Recording — see below.)* |
+| **1** | **Streaming chat + tool interrupts** | Tokens render incrementally; on `TOOL_CALL` the text **freezes with zero reflow**, a card appears below, `TOOL_ACK` fires < 2 s, on `TOOL_RESULT` the stream resumes with no gap or duplicate. Sequential calls **stack**. |
+| **2** | **Agent trace timeline** | Every event becomes a row; tokens collapse into one expandable *"Streamed 47 tokens (1.2s)"* row; `TOOL_CALL`/`TOOL_RESULT` linked by `call_id`; **bidirectional click** chat ↔ timeline; filter + search; virtualized for 30+ ev/sec. |
+| **3** | **Context inspector** | Syntax-highlighted tree; same-`context_id` snapshots render an **added / removed / changed diff**; a **history scrubber** steps through snapshots; lazy expansion keeps 500 KB+ payloads interactive. |
+| **4** | **Reconnection + state recovery** | Non-blocking indicator < 500 ms; backoff **500 ms → 1 → 2 → 4 → cap 10 s**; `RESUME` first; replayed events reordered, deduped, stitched in with no jump; mid-tool-call drops show a **waiting** card until replay. |
+| **5** | **Chaos survival** | Drops, shuffled `seq`, duplicates, rapid double tool calls, 500 KB context, empty-challenge `PING` — all handled without a crash or inconsistent DOM. *(Demo above.)* |
 
 ---
 
-## 🎬 Demo & media
+## 🎬 Reproduce the chaos demo yourself
 
-### ▶️ Chaos-mode walkthrough — [**Watch the demo on Loom**](https://www.loom.com/share/a87ebb5deb7043f3b09c41b23b627286)
-
-> A 3–5 minute screen recording of the Agent Console running against the backend in `--mode chaos`, walking through every survival scenario: connection drop mid-stream, out-of-order messages, rapid tool calls, an oversized context snapshot, and a corrupt heartbeat — with the `/log` endpoint on screen as proof of protocol compliance.
-
-### 📸 Screenshots (normal mode)
-
-**(a) Streamed response with a tool call** — incremental tokens, the frozen text, and a resolved `lookup_metric` card; the live context inspector (left) and trace timeline (right) update in lockstep.
-
-![Streamed response with a tool call](agent-server/images/01-streaming-tool-call.png)
-
-**(b) Rapid / stacked tool calls + trace timeline** — `analyze and compare` fires two tool calls (`fetch_dataset`, `compute_correlation`); both cards stack and resolve, while the right-hand timeline streams every PING/PONG/TOOL event.
-
-![Stacked tool calls and trace timeline](agent-server/images/02-rapid-tool-calls.png)
-
-**(c) Context inspector + state-machine overview** — the three-panel layout with the context tree (added / removed / changed legend, history scrubber) and the live WebSocket state-machine map shown before connecting.
-
-![Context inspector and state machine](agent-server/images/03-state-machine.png)
-
-**(d) Protocol compliance proof — the `/log` endpoint** — every recorded client event (`USER_MESSAGE`, `TOOL_ACK`, `PONG` with `latency_ms`) carries `"verdict": "ok"`. This is exactly what the evaluator audits.
-
-![Server /log verdicts all ok](agent-server/images/04-log-compliance.png)
-
-**Reproduce the recording yourself:** run `npm run dev:chaos`, keep `GET http://localhost:4747/log` on screen, and walk each scenario:
+Run `npm run dev:chaos`, keep `GET http://localhost:4747/log` on screen, and walk each scenario:
 
 | Scenario | Trigger / what to show |
 |----------|------------------------|
@@ -150,19 +200,16 @@ stateDiagram-v2
 
 ---
 
-## 🛠️ Commands
+<details>
+<summary><h2>🛠️ Commands &amp; project structure (click to expand)</h2></summary>
 
 ```bash
-npm run dev            # Next.js dev server → http://localhost:3000
+npm run dev                  # Next.js dev server → http://localhost:3000
 npm run build && npm start   # production
-npm test               # Jest unit suites (seqBuffer · jsonDiff · stateMachine · wsClient)
-npm run verify         # end-to-end /log audit against the live server
-npx tsc --noEmit       # strict type-check
+npm test                     # Jest unit suites (seqBuffer · jsonDiff · stateMachine · wsClient)
+npm run verify               # end-to-end /log audit against the live server
+npx tsc --noEmit             # strict type-check
 ```
-
----
-
-## 📂 Project structure
 
 ```
 src/
@@ -189,14 +236,24 @@ src/
 verify-protocol.mjs        end-to-end harness: drives the real server, audits /log
 ```
 
+</details>
+
 ---
 
 ## ✅ Constraints honored
 
-`Next.js 16 App Router` (no Pages Router) · `strict: true`, no `@ts-ignore`, `any` quarantined to one documented file · **no `vercel/ai`, no langchain, no AI-SDK streaming helpers — the renderer is built from scratch.** State lives in Zustand + Immer; the rationale is in [`DECISIONS.md`](DECISIONS.md).
+`Next.js 16 App Router` (no Pages Router) · `strict: true`, no `@ts-ignore`, `any` quarantined to one documented file · **no `vercel/ai`, no langchain, no AI-SDK streaming helpers — the renderer is built from scratch.** State lives in Zustand + Immer; the rationale is in [`DECISIONS.md`](agent-console/DECISIONS.md).
 
 <div align="center">
 
-**Read [`DECISIONS.md`](DECISIONS.md) for the seq-ordering data structure, the layout-shift strategy, the consumed-vs-received recovery model, the 50-stream / 100×-length scaling answers, and §7 — the protocol race the brief dares you to find.**
+<br/>
+
+### 📖 Read [`DECISIONS.md`](agent-console/DECISIONS.md)
+
+for the seq-ordering data structure · the layout-shift strategy · the consumed-vs-received recovery model · the 50-stream / 100×-length scaling answers · and **§7 — the protocol race the brief dares you to find** ⚑
+
+<br/>
+
+<sub>Built for the Alchemyst AI · Full Stack AI Engineer assignment</sub>
 
 </div>
